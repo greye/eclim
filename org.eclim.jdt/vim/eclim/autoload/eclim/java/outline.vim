@@ -58,10 +58,11 @@ function! eclim#java#outline#Outline() " {{{
 
   set ft=java
   " fold function calls into their parent
-  setlocal foldmethod=expr
+  setlocal foldignore=
+  setlocal foldmethod=indent
   setlocal foldexpr='>'.len(substitute(getline(v:lnum),'^\\(\\s*\\).*','\\1',''))/2
-  setlocal foldtext=substitute(getline(v:foldstart),'^\\(\\s*\\)\\s\\s','\\1+\ ','').':\ '.(v:foldend-v:foldstart+1).'\ lines'
-
+  " setlocal foldtext=substitute(getline(v:foldstart),'^\\(\\s*\\)\\s\\s','\\1+\ ','').':\ '.(v:foldend-v:foldstart+1).'\ lines'
+  setlocal foldtext=getline(v:foldstart-1).':\ '.(v:foldend-v:foldstart+1).'\ lines'
   setlocal modifiable noreadonly
   call append(line('$'), ['', '" use ? to view help'])
   setlocal nomodifiable readonly
@@ -94,7 +95,7 @@ function! s:OutlineFormat(result, lines, info, indent) " {{{
         \ 'line': child.position.line,
         \ 'col': child.position.column
       \ })
-    call s:OutlineFormat(child.children, a:lines, a:info, a:indent . "\t")
+    call s:OutlineFormat(child.children, a:lines, a:info, a:indent . "  ")
   endfor
 endfunction " }}}
 
