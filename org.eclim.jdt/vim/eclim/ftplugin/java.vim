@@ -89,6 +89,8 @@ if &ft == 'java'
   augroup eclim_java
     autocmd! BufWritePost <buffer>
     autocmd BufWritePost <buffer> call eclim#lang#UpdateSrcFile('java')
+    autocmd BufWritePost <buffer> call eclim#java#outline#Outline()
+    autocmd BufWinEnter <buffer> call eclim#java#outline#Outline()
   augroup END
 endif
 
