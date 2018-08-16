@@ -49,8 +49,12 @@ function! eclim#java#outline#Outline() " {{{
 
   let lines = []
   let info = []
+  let l:options = {
+    \ 'orientation': 'vertical',
+    \ 'width': 80
+  \ }
   call s:OutlineFormat(result, lines, info, '')
-  call eclim#util#TempWindow('[Outline]', lines)
+  call eclim#util#TempWindow('[Outline]', lines, options)
 
   set ft=java
   " fold function calls into their parent
