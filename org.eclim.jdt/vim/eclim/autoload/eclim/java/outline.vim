@@ -87,7 +87,63 @@ function! eclim#java#outline#Outline() " {{{
     \ :call eclim#help#BufferHelp(b:outline_help, 'vertical', 40)<cr>
 endfunction " }}}
 
+function! s:CompareResults(lhs, rhs)
+  if !has_key(a:lhs, 'info')
+    let a:lhs.info = s:ParseSignature(a:lhs.name)
+  endif
+  if !has_key(a:rhs, 'info')
+    let a:rhs.info = s:ParseSignature(a:rhs.name)
+  endif
+  let lord = a:lhs.info.order
+  let rord = a:rhs.info.order
+
+  if lord == rord
+    let lname = a:lhs.info.name
+    let rname = a:rhs.info.name
+    if lname <# rname
+      return -1
+    elseif lname ># rname
+      return 1
+    else
+      return 0
+    endif
+  else
+    return lord - rord
+  end
+endfunction
+
+function! s:ParseSignature(str)
+  let item = {}
+
+  let type = matchstr(a:str, ' class ')
+  let type = empty(type) ? matchstr(a:str, ' enum ') : type
+  let type = empty(type) ? matchstr(a:str, ' interface ') : type
+
+  let item.isfunc = !empty(matchstr(a:str, '(.\{-})'))
+  let item.isstatic = !empty(matchstr(a:str, ' static '))
+  let item.istype = !empty(type)
+  let item.type = type
+
+  if item.isfunc
+    let item.name = matchlist(a:str, ' \(\h\S\{-}\)(')[1]
+  elseif item.istype
+    let item.name = matchlist(a:str, item.type . '\(\S\+\)')[1]
+  else
+    let item.name = matchlist(a:str, ' \(\h\S\{-}\) :')[1]
+  end
+
+  if item.isfunc
+    let item.order = item.isstatic ? 20 : 10
+  elseif item.istype
+    let item.order = 50
+  else
+    let item.order = 30
+  endif
+  return item
+endfunction
+
 function! s:OutlineFormat(result, lines, info, indent) " {{{
+  call sort(a:result, "s:CompareResults")
   for child in a:result
     call add(a:lines, a:indent . child.name)
     call add(a:info, {
